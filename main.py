@@ -1,1 +1,8 @@
-print("Hello Testing")
+from fastapi import FastAPI
+
+app = FastAPI()
+
+
+@app.get("/")
+def read_root():
+    return {"message": "COI Case Study Automation API is running"}
