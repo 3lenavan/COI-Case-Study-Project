@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
-from models import CaseStudyIntake
+from models import CaseStudyIntake, WorkflowStatus
 from storage import workflows
 
 
@@ -11,7 +11,7 @@ def create_workflow(intake: CaseStudyIntake) -> dict:
 
     workflow = {
         "workflow_id": workflow_id,
-        "status": "RECEIVED",
+        "status": WorkflowStatus.RECEIVED,
         "received_at": received_at,
         "source": "FastAPI Docs",
         "client_name": intake.client_name,

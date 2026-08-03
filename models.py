@@ -1,5 +1,11 @@
+from enum import Enum
+
 from pydantic import BaseModel, field_validator
 
+class WorkflowStatus(str, Enum):
+    RECEIVED = "RECEIVED"
+    VALIDATED = "VALIDATED"
+    FAILED = "FAILED"
 
 class CaseStudyIntake(BaseModel):
     client_name: str
