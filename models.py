@@ -7,6 +7,9 @@ class WorkflowStatus(str, Enum):
     VALIDATED = "VALIDATED"
     FAILED = "FAILED"
 
+class WorkflowStatusUpdate(BaseModel):
+    status: WorkflowStatus
+
 class CaseStudyIntake(BaseModel):
     client_name: str
     project_name: str

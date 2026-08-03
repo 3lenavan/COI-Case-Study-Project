@@ -25,3 +25,16 @@ def create_workflow(intake: CaseStudyIntake) -> dict:
 
 def get_workflow(workflow_id: str) -> dict | None:
     return workflows.get(workflow_id)
+
+def update_workflow_status(
+    workflow_id: str,
+    new_status: WorkflowStatus,
+) -> dict | None:
+    workflow = workflows.get(workflow_id)
+
+    if workflow is None:
+        return None
+
+    workflow["status"] = new_status
+
+    return workflow
