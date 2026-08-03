@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from models import CaseStudyIntake
+from storage import workflows
 
 
 def create_workflow(intake: CaseStudyIntake) -> dict:
@@ -18,4 +19,9 @@ def create_workflow(intake: CaseStudyIntake) -> dict:
         "emanage_job_number": intake.emanage_job_number,
     }
 
+    workflows[workflow_id] = workflow
+
     return workflow
+
+def get_workflow(workflow_id: str) -> dict | None:
+    return workflows.get(workflow_id)
