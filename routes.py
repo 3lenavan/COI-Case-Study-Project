@@ -2,9 +2,9 @@ from fastapi import APIRouter, HTTPException, status
 
 from models import CaseStudyIntake, WorkflowStatusUpdate
 from services import (
-    create_workflow, 
-    get_workflow, 
-    update_workflow_status
+    create_workflow,
+    get_workflow,
+    update_workflow_status,
 )
 
 router = APIRouter()
@@ -15,7 +15,16 @@ router = APIRouter()
     status_code=status.HTTP_202_ACCEPTED,
 )
 def create_case_study_intake(intake: CaseStudyIntake):
-    return create_workflow(intake)
+    workflow = create_workflow(intake)
+
+    if workflow is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Sender is not approved",
+        )
+
+    return workflow
+
 
 @router.get("/v1/case-studies/{workflow_id}")
 def read_workflow(workflow_id: str):
@@ -28,6 +37,7 @@ def read_workflow(workflow_id: str):
         )
 
     return workflow
+
 
 @router.patch("/v1/case-studies/{workflow_id}/status")
 def change_workflow_status(

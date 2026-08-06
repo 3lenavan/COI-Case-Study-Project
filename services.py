@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from uuid import uuid4
 
+from config import APPROVED_SENDERS
 from models import CaseStudyIntake, WorkflowStatus
 from storage import workflows
 
@@ -11,7 +12,10 @@ def get_workflow_by_message_id(message_id: str) -> dict | None:
 
     return None
 
-def create_workflow(intake: CaseStudyIntake) -> dict:
+def create_workflow(intake: CaseStudyIntake) -> dict | None:
+    if not is_approved_sender(str(intake.sender_email)):
+        return None
+
     existing_workflow = get_workflow_by_message_id(intake.message_id)
 
     if existing_workflow is not None:
@@ -19,7 +23,7 @@ def create_workflow(intake: CaseStudyIntake) -> dict:
 
     workflow_id = str(uuid4())
     current_time = datetime.now(timezone.utc).isoformat()
-
+    
     workflow = {
         "workflow_id": workflow_id,
         "status": WorkflowStatus.RECEIVED,
@@ -37,6 +41,9 @@ def create_workflow(intake: CaseStudyIntake) -> dict:
     workflows[workflow_id] = workflow
 
     return workflow
+
+def is_approved_sender(sender_email: str) -> bool:
+    return sender_email.lower() in APPROVED_SENDERS
 
 def get_workflow(workflow_id: str) -> dict | None:
     return workflows.get(workflow_id)

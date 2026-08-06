@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, EmailStr, field_validator
 
 class WorkflowStatus(str, Enum):
     RECEIVED = "RECEIVED"
@@ -16,7 +16,7 @@ class CaseStudyIntake(BaseModel):
     emanage_job_number: str | None = None
 
     message_id: str
-    sender_email: str
+    sender_email: EmailStr
     email_subject: str
 
     @field_validator("client_name", "project_name", "message_id", "sender_email", "email_subject")
