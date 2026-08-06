@@ -15,7 +15,11 @@ class CaseStudyIntake(BaseModel):
     project_name: str
     emanage_job_number: str | None = None
 
-    @field_validator("client_name", "project_name")
+    message_id: str
+    sender_email: str
+    email_subject: str
+
+    @field_validator("client_name", "project_name", "message_id", "sender_email", "email_subject")
     @classmethod
     def fields_cannot_be_blank(cls, value: str) -> str:
         cleaned_value = value.strip()

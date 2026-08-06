@@ -17,6 +17,9 @@ def create_workflow(intake: CaseStudyIntake) -> dict:
         "client_name": intake.client_name,
         "project_name": intake.project_name,
         "emanage_job_number": intake.emanage_job_number,
+        "message_id": intake.message_id,
+        "sender_email": intake.sender_email,
+        "email_subject": intake.email_subject,
     }
 
     workflows[workflow_id] = workflow
