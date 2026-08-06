@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, status
 
 from models import CaseStudyIntake, WorkflowStatusUpdate
 from services import (
+    advance_to_fathom_search,
     create_workflow,
     get_workflow,
     update_workflow_status,
@@ -48,6 +49,18 @@ def change_workflow_status(
         workflow_id,
         status_update.status,
     )
+
+    if workflow is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Workflow not found",
+        )
+
+    return workflow
+
+@router.patch("/v1/case-studies/{workflow_id}/start-fathom-search")
+def start_fathom_search(workflow_id: str):
+    workflow = advance_to_fathom_search(workflow_id)
 
     if workflow is None:
         raise HTTPException(

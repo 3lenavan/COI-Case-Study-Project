@@ -71,3 +71,14 @@ def update_workflow_status(
     workflow["updated_at"] = datetime.now(timezone.utc).isoformat()
 
     return workflow
+
+def advance_to_fathom_search(workflow_id: str) -> dict | None:
+    workflow = workflows.get(workflow_id)
+
+    if workflow is None:
+        return None
+
+    workflow["stage"] = WorkflowStage.SEARCHING_FATHOM
+    workflow["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    return workflow
