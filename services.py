@@ -4,15 +4,27 @@ from uuid import uuid4
 from models import CaseStudyIntake, WorkflowStatus
 from storage import workflows
 
+def get_workflow_by_message_id(message_id: str) -> dict | None:
+    for workflow in workflows.values():
+        if workflow["message_id"] == message_id:
+            return workflow
+
+    return None
 
 def create_workflow(intake: CaseStudyIntake) -> dict:
+    existing_workflow = get_workflow_by_message_id(intake.message_id)
+
+    if existing_workflow is not None:
+        return existing_workflow
+
     workflow_id = str(uuid4())
-    received_at = datetime.now(timezone.utc).isoformat()
+    current_time = datetime.now(timezone.utc).isoformat()
 
     workflow = {
         "workflow_id": workflow_id,
         "status": WorkflowStatus.RECEIVED,
-        "received_at": received_at,
+        "received_at": current_time,
+        "updated_at": current_time,
         "source": "FastAPI Docs",
         "client_name": intake.client_name,
         "project_name": intake.project_name,
@@ -39,5 +51,6 @@ def update_workflow_status(
         return None
 
     workflow["status"] = new_status
-
+    workflow["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
     return workflow
