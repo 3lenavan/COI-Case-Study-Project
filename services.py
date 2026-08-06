@@ -2,8 +2,9 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 from config import APPROVED_SENDERS
-from models import CaseStudyIntake, WorkflowStatus
+from models import CaseStudyIntake, WorkflowStage, WorkflowStatus
 from storage import workflows
+
 
 def get_workflow_by_message_id(message_id: str) -> dict | None:
     for workflow in workflows.values():
@@ -11,6 +12,11 @@ def get_workflow_by_message_id(message_id: str) -> dict | None:
             return workflow
 
     return None
+
+
+def is_approved_sender(sender_email: str) -> bool:
+    return sender_email.lower() in APPROVED_SENDERS
+
 
 def create_workflow(intake: CaseStudyIntake) -> dict | None:
     if not is_approved_sender(str(intake.sender_email)):
@@ -23,10 +29,11 @@ def create_workflow(intake: CaseStudyIntake) -> dict | None:
 
     workflow_id = str(uuid4())
     current_time = datetime.now(timezone.utc).isoformat()
-    
+
     workflow = {
         "workflow_id": workflow_id,
         "status": WorkflowStatus.RECEIVED,
+        "stage": WorkflowStage.INTAKE_RECEIVED,
         "received_at": current_time,
         "updated_at": current_time,
         "source": "FastAPI Docs",
@@ -42,11 +49,10 @@ def create_workflow(intake: CaseStudyIntake) -> dict | None:
 
     return workflow
 
-def is_approved_sender(sender_email: str) -> bool:
-    return sender_email.lower() in APPROVED_SENDERS
 
 def get_workflow(workflow_id: str) -> dict | None:
     return workflows.get(workflow_id)
+
 
 def update_workflow_status(
     workflow_id: str,
@@ -58,6 +64,10 @@ def update_workflow_status(
         return None
 
     workflow["status"] = new_status
+
+    if new_status == WorkflowStatus.VALIDATED:
+        workflow["stage"] = WorkflowStage.SEARCHING_CLIENT
+
     workflow["updated_at"] = datetime.now(timezone.utc).isoformat()
-    
+
     return workflow
