@@ -69,9 +69,63 @@ def get_all_meetings(max_pages: int = 3):
     return all_meetings
 
 
-# Test the Fathom functions when this file is run directly
-if __name__ == "__main__":
+# Search for meetings that contain the client name in their title
+def find_meetings_by_client(client_name: str):
     meetings = get_all_meetings()
 
-    print("\n========== SUMMARY ==========")
-    print("Total meetings:", len(meetings))
+    matching_meetings = []
+
+    for meeting in meetings:
+        title = meeting["title"]
+
+        if client_name.lower() in title.lower():
+            matching_meetings.append(meeting)
+
+    return matching_meetings
+
+
+# Get the transcript for a specific recording
+def get_transcript(recording_id: int):
+    headers = {
+        "X-Api-Key": FATHOM_API_KEY
+    }
+
+    transcript_url = (
+        f"https://api.fathom.ai/external/v1/recordings/"
+        f"{recording_id}/transcript"
+    )
+
+    response = httpx.get(
+        transcript_url,
+        headers=headers,
+        timeout=30.0,
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+
+# Test searching for meetings by client name
+if __name__ == "__main__":
+    matching_meetings = find_meetings_by_client("Patriot")
+
+    print("\n========== MATCHING MEETINGS ==========")
+
+    for meeting in matching_meetings:
+        print("Title:", meeting["title"])
+        print("Recording ID:", meeting["recording_id"])
+        print("Start Time:", meeting["recording_start_time"])
+        print("-" * 40)
+
+    print("Total matches:", len(matching_meetings))
+
+    transcript = get_transcript(171394681)
+
+    print("\n========== TRANSCRIPT TEST ==========")
+
+    for section in transcript["transcript"]:
+        print("Speaker:", section["speaker"]["display_name"])
+        print("Timestamp:", section["timestamp"])
+        print("Text:", section["text"])
+        print("-" * 40)

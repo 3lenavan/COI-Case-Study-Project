@@ -1,3 +1,4 @@
+from fathom_service import find_meetings_by_client
 from datetime import datetime, timezone
 from uuid import uuid4
 
@@ -106,6 +107,15 @@ def advance_to_fathom_search(workflow_id: str) -> dict | None:
 
     # Update the stage to show that Fathom meetings are being searched.
     workflow["stage"] = WorkflowStage.SEARCHING_FATHOM
+
+    # Search for meetings that contain the client name in their title.
+    client_name = workflow["client_name"]
+
+    # Use the Fathom service to find meetings that match the client name.
+    matching_meetings = find_meetings_by_client(client_name)
+
+    # Store the matching meetings in the workflow for later review.
+    workflow["fathom_meetings"] = matching_meetings
 
     # Update the timestamp because the workflow changed.
     workflow["updated_at"] = datetime.now(timezone.utc).isoformat()
