@@ -6,6 +6,8 @@ from models import CaseStudyIntake, WorkflowStage, WorkflowStatus
 from storage import workflows
 
 
+# Search existing workflows for one with the same email message ID.
+# This helps prevent the same email from creating duplicate workflows.
 def get_workflow_by_message_id(message_id: str) -> dict | None:
     for workflow in workflows.values():
         if workflow["message_id"] == message_id:
@@ -14,22 +16,32 @@ def get_workflow_by_message_id(message_id: str) -> dict | None:
     return None
 
 
+# Check whether the email sender is allowed to create a case study workflow.
 def is_approved_sender(sender_email: str) -> bool:
     return sender_email.lower() in APPROVED_SENDERS
 
 
+# Create and store a new case study workflow.
 def create_workflow(intake: CaseStudyIntake) -> dict | None:
+
+    # Reject the request if the sender is not approved.
     if not is_approved_sender(str(intake.sender_email)):
         return None
 
+    # Check whether this email has already created a workflow.
     existing_workflow = get_workflow_by_message_id(intake.message_id)
 
+    # Return the existing workflow instead of creating a duplicate.
     if existing_workflow is not None:
         return existing_workflow
 
+    # Generate a unique ID for this workflow.
     workflow_id = str(uuid4())
+
+    # Record the current time in UTC.
     current_time = datetime.now(timezone.utc).isoformat()
 
+    # Build the workflow using the information from the intake request.
     workflow = {
         "workflow_id": workflow_id,
         "status": WorkflowStatus.RECEIVED,
@@ -45,40 +57,57 @@ def create_workflow(intake: CaseStudyIntake) -> dict | None:
         "email_subject": intake.email_subject,
     }
 
+    # Save the workflow in temporary storage.
     workflows[workflow_id] = workflow
 
     return workflow
 
 
+# Find and return a workflow using its workflow ID.
 def get_workflow(workflow_id: str) -> dict | None:
     return workflows.get(workflow_id)
 
 
+# Update the status of an existing workflow.
 def update_workflow_status(
     workflow_id: str,
     new_status: WorkflowStatus,
 ) -> dict | None:
+
+    # Find the workflow in temporary storage.
     workflow = workflows.get(workflow_id)
 
+    # Return None if the workflow does not exist.
     if workflow is None:
         return None
 
+    # Update the workflow's status.
     workflow["status"] = new_status
 
+    # Once validation succeeds, begin searching for the client.
     if new_status == WorkflowStatus.VALIDATED:
         workflow["stage"] = WorkflowStage.SEARCHING_CLIENT
 
+    # Record when the workflow was last changed.
     workflow["updated_at"] = datetime.now(timezone.utc).isoformat()
 
     return workflow
 
+
+# Move the workflow to the Fathom meeting search stage.
 def advance_to_fathom_search(workflow_id: str) -> dict | None:
+
+    # Find the workflow in temporary storage.
     workflow = workflows.get(workflow_id)
 
+    # Return None if the workflow does not exist.
     if workflow is None:
         return None
 
+    # Update the stage to show that Fathom meetings are being searched.
     workflow["stage"] = WorkflowStage.SEARCHING_FATHOM
+
+    # Update the timestamp because the workflow changed.
     workflow["updated_at"] = datetime.now(timezone.utc).isoformat()
 
     return workflow
