@@ -3,7 +3,6 @@ import os
 import httpx
 from dotenv import load_dotenv
 
-
 # Load environment variables from the .env file
 load_dotenv()
 
@@ -12,7 +11,6 @@ FATHOM_API_KEY = os.getenv("FATHOM_API_KEY")
 
 # Fathom endpoint used to retrieve meetings
 FATHOM_MEETINGS_URL = "https://api.fathom.ai/external/v1/meetings"
-
 
 # Get one page of meetings from Fathom
 def get_meetings(cursor: str | None = None):
@@ -105,27 +103,35 @@ def get_transcript(recording_id: int):
 
     return response.json()
 
+# Get transcripts for a list of meetings
+def get_transcripts_for_meetings(meetings: list):
+    meetings_with_transcripts = []
 
-# Test searching for meetings by client name
+    for meeting in meetings:
+        recording_id = meeting["recording_id"]
+
+        transcript = get_transcript(recording_id)
+
+        meeting["transcript"] = transcript
+
+        meetings_with_transcripts.append(meeting)
+
+    return meetings_with_transcripts
+
+# Testing block to demonstrate the functionality of the Fathom service functions
 if __name__ == "__main__":
     matching_meetings = find_meetings_by_client("Patriot")
 
-    print("\n========== MATCHING MEETINGS ==========")
+    meetings_with_transcripts = get_transcripts_for_meetings(
+        matching_meetings
+    )
 
-    for meeting in matching_meetings:
+    print("\n========== MEETINGS WITH TRANSCRIPTS ==========")
+
+    for meeting in meetings_with_transcripts:
         print("Title:", meeting["title"])
         print("Recording ID:", meeting["recording_id"])
-        print("Start Time:", meeting["recording_start_time"])
+        print("Transcript retrieved:", meeting["transcript"] is not None)
         print("-" * 40)
 
-    print("Total matches:", len(matching_meetings))
-
-    transcript = get_transcript(171394681)
-
-    print("\n========== TRANSCRIPT TEST ==========")
-
-    for section in transcript["transcript"]:
-        print("Speaker:", section["speaker"]["display_name"])
-        print("Timestamp:", section["timestamp"])
-        print("Text:", section["text"])
-        print("-" * 40)
+    print("Total meetings:", len(meetings_with_transcripts))
