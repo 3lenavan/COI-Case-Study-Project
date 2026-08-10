@@ -110,9 +110,13 @@ def get_transcripts_for_meetings(meetings: list):
     for meeting in meetings:
         recording_id = meeting["recording_id"]
 
-        transcript = get_transcript(recording_id)
+        try:
+            transcript = get_transcript(recording_id)
+            meeting["transcript"] = transcript
 
-        meeting["transcript"] = transcript
+        except httpx.HTTPStatusError:
+            meeting["transcript"] = None
+            meeting["transcript_error"] = "Transcript could not be retrieved"
 
         meetings_with_transcripts.append(meeting)
 

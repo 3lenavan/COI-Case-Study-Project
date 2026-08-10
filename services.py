@@ -1,4 +1,4 @@
-from fathom_service import find_meetings_by_client
+from fathom_service import (find_meetings_by_client,get_transcripts_for_meetings,)
 from datetime import datetime, timezone
 from uuid import uuid4
 
@@ -114,8 +114,14 @@ def advance_to_fathom_search(workflow_id: str) -> dict | None:
     # Use the Fathom service to find meetings that match the client name.
     matching_meetings = find_meetings_by_client(client_name)
 
+    meetings_with_transcripts = get_transcripts_for_meetings(
+    matching_meetings
+)
     # Store the matching meetings in the workflow for later review.
-    workflow["fathom_meetings"] = matching_meetings
+    workflow["fathom_meetings"] = meetings_with_transcripts
+
+    # Update the timestamp because the workflow changed.
+    workflow["stage"] = WorkflowStage.GENERATING_DRAFT
 
     # Update the timestamp because the workflow changed.
     workflow["updated_at"] = datetime.now(timezone.utc).isoformat()
