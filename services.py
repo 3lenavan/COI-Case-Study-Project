@@ -1,4 +1,4 @@
-from fathom_service import (find_meetings_by_client,get_transcripts_for_meetings,)
+from fathom_service import (find_meetings_by_client,get_transcripts_for_meetings, format_transcripts_for_ai)
 from datetime import datetime, timezone
 from uuid import uuid4
 
@@ -117,6 +117,11 @@ def advance_to_fathom_search(workflow_id: str) -> dict | None:
     meetings_with_transcripts = get_transcripts_for_meetings(
     matching_meetings
 )
+    formatted_transcripts = format_transcripts_for_ai(
+    meetings_with_transcripts
+)
+    workflow["formatted_fathom_transcripts"] = formatted_transcripts
+
     # Store the matching meetings in the workflow for later review.
     workflow["fathom_meetings"] = meetings_with_transcripts
 

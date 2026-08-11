@@ -122,6 +122,33 @@ def get_transcripts_for_meetings(meetings: list):
 
     return meetings_with_transcripts
 
+# Format the transcripts for AI processing
+def format_transcripts_for_ai(meetings: list) -> str:
+    formatted_text = ""
+
+    for meeting in meetings:
+        formatted_text += f"\nMeeting: {meeting['title']}\n"
+        formatted_text += f"Date: {meeting['recording_start_time']}\n"
+        formatted_text += "-" * 40 + "\n"
+
+        transcript_data = meeting.get("transcript")
+
+        if transcript_data is None:
+            formatted_text += "Transcript unavailable.\n"
+            continue
+
+        for section in transcript_data["transcript"]:
+            speaker = section["speaker"]["display_name"]
+            timestamp = section["timestamp"]
+            text = section["text"]
+
+            formatted_text += (
+                f"{speaker} [{timestamp}]:\n"
+                f"{text}\n\n"
+            )
+
+    return formatted_text
+
 # Testing block to demonstrate the functionality of the Fathom service functions
 if __name__ == "__main__":
     matching_meetings = find_meetings_by_client("Patriot")
@@ -130,12 +157,10 @@ if __name__ == "__main__":
         matching_meetings
     )
 
-    print("\n========== MEETINGS WITH TRANSCRIPTS ==========")
+    formatted_transcripts = format_transcripts_for_ai(
+        meetings_with_transcripts
+    )
 
-    for meeting in meetings_with_transcripts:
-        print("Title:", meeting["title"])
-        print("Recording ID:", meeting["recording_id"])
-        print("Transcript retrieved:", meeting["transcript"] is not None)
-        print("-" * 40)
+    print("\n========== AI TRANSCRIPT FORMAT TEST ==========")
 
-    print("Total meetings:", len(meetings_with_transcripts))
+    print(formatted_transcripts[:3000])
