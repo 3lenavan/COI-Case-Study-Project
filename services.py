@@ -1,9 +1,13 @@
 from pdf_service import extract_text_from_pdf
+
+from ai_service import build_case_study_prompt
+
 from fathom_service import (
     find_meetings_by_client,
     get_transcripts_for_meetings,
     format_transcripts_for_ai,
 )
+
 from datetime import datetime, timezone
 from uuid import uuid4
 
@@ -141,6 +145,12 @@ def advance_to_fathom_search(workflow_id: str) -> dict | None:
     # Store the case study sources in the workflow for later use.
     workflow["case_study_sources"] = case_study_sources
 
+    # Build the prompt that will eventually be sent to the AI.
+    case_study_prompt = build_case_study_prompt(case_study_sources)
+
+    # Store the AI prompt in the workflow.
+    workflow["case_study_prompt"] = case_study_prompt
+
     # Move to the case study draft generation stage.
     workflow["stage"] = WorkflowStage.GENERATING_DRAFT
 
@@ -191,8 +201,14 @@ def add_quote_pdf_to_workflow(
     # Rebuild the case study sources with the new PDF information.
     workflow["case_study_sources"] = build_case_study_sources(workflow_id)
 
+    # Build the prompt that will eventually be sent to the AI.
+    case_study_prompt = build_case_study_prompt(
+        workflow["case_study_sources"]
+)
+    # Store the AI prompt in the workflow.
+    workflow["case_study_prompt"] = case_study_prompt
+
     # Update the timestamp because the workflow changed.
     workflow["updated_at"] = datetime.now(timezone.utc).isoformat()
 
     return workflow
-
