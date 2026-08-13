@@ -1,13 +1,17 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, File, HTTPException, UploadFile, status
+
+import os
+import tempfile
 
 from models import CaseStudyIntake, WorkflowStatusUpdate
+
 from services import (
     advance_to_fathom_search,
+    add_quote_pdf_to_workflow,
     create_workflow,
     get_workflow,
     update_workflow_status,
 )
-
 
 # Creates a router that holds the case study API endpoints.
 router = APIRouter()
@@ -76,11 +80,12 @@ def change_workflow_status(
     return workflow
 
 
-# PATCH endpoint used to move a workflow to the Fathom search stage.
+# PATCH endpoint used to start the Fathom meeting search.
+
 @router.patch("/v1/case-studies/{workflow_id}/start-fathom-search")
 def start_fathom_search(workflow_id: str):
 
-    # Tell services.py to move the workflow to SEARCHING_FATHOM.
+    # Send the workflow ID to services.py to begin the Fathom search.
     workflow = advance_to_fathom_search(workflow_id)
 
     # Return 404 Not Found if the workflow does not exist.
@@ -90,5 +95,52 @@ def start_fathom_search(workflow_id: str):
             detail="Workflow not found",
         )
 
-    # Return the workflow with its updated stage.
+    # Return the updated workflow.
     return workflow
+
+# POST endpoint used to upload a quote PDF to an existing workflow.
+@router.post("/v1/case-studies/{workflow_id}/quote-pdf")
+async def upload_quote_pdf(
+    workflow_id: str,
+    file: UploadFile = File(...),
+):
+
+    # Make sure the uploaded file is a PDF.
+    if file.content_type != "application/pdf":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File must be a PDF",
+        )
+
+    # Find the existing workflow.
+    workflow = get_workflow(workflow_id)
+
+    # Return 404 Not Found if the workflow does not exist.
+    if workflow is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Workflow not found",
+        )
+
+    # Temporarily save the uploaded PDF.
+    with tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=".pdf",
+    ) as temp_file:
+        file_bytes = await file.read()
+        temp_file.write(file_bytes)
+        temp_file_path = temp_file.name
+
+    try:
+        # Extract the PDF text and add it to the workflow.
+        updated_workflow = add_quote_pdf_to_workflow(
+            workflow_id,
+            temp_file_path,
+        )
+
+    finally:
+        # Delete the temporary PDF after it has been processed.
+        os.remove(temp_file_path)
+
+    # Return the updated workflow.
+    return updated_workflow

@@ -1,4 +1,9 @@
-from fathom_service import (find_meetings_by_client,get_transcripts_for_meetings, format_transcripts_for_ai)
+from pdf_service import extract_text_from_pdf
+from fathom_service import (
+    find_meetings_by_client,
+    get_transcripts_for_meetings,
+    format_transcripts_for_ai,
+)
 from datetime import datetime, timezone
 from uuid import uuid4
 
@@ -114,21 +119,80 @@ def advance_to_fathom_search(workflow_id: str) -> dict | None:
     # Use the Fathom service to find meetings that match the client name.
     matching_meetings = find_meetings_by_client(client_name)
 
+    # Retrieve transcripts for the matching client meetings.
     meetings_with_transcripts = get_transcripts_for_meetings(
-    matching_meetings
-)
+        matching_meetings
+    )
+
+    # Format the Fathom transcripts into clean text for AI.
     formatted_transcripts = format_transcripts_for_ai(
-    meetings_with_transcripts
-)
+        meetings_with_transcripts
+    )
+
+    # Store the formatted transcript text for future AI generation.
     workflow["formatted_fathom_transcripts"] = formatted_transcripts
 
     # Store the matching meetings in the workflow for later review.
     workflow["fathom_meetings"] = meetings_with_transcripts
 
-    # Update the timestamp because the workflow changed.
+    # Prepare the information that will be sent to the AI for case study generation.
+    case_study_sources = build_case_study_sources(workflow_id)
+
+    # Store the case study sources in the workflow for later use.
+    workflow["case_study_sources"] = case_study_sources
+
+    # Move to the case study draft generation stage.
     workflow["stage"] = WorkflowStage.GENERATING_DRAFT
 
     # Update the timestamp because the workflow changed.
     workflow["updated_at"] = datetime.now(timezone.utc).isoformat()
 
     return workflow
+
+
+# Prepare the collected workflow information for case study generation.
+def build_case_study_sources(workflow_id: str) -> dict | None:
+
+    # Find the workflow in temporary storage.
+    workflow = workflows.get(workflow_id)
+
+    # Return None if the workflow does not exist.
+    if workflow is None:
+        return None
+
+    # Gather the information that will eventually be sent to the AI.
+    case_study_sources = {
+        "client_name": workflow["client_name"],
+        "project_name": workflow["project_name"],
+        "emanage_job_number": workflow["emanage_job_number"],
+        "fathom_transcripts": workflow.get("formatted_fathom_transcripts"),
+        "quote_pdf_text": workflow.get("quote_pdf_text"),
+    }
+
+    return case_study_sources
+
+# Extract quote PDF text and store it in the workflow.
+def add_quote_pdf_to_workflow(
+    workflow_id: str,
+    file_path: str,
+) -> dict | None:
+    workflow = workflows.get(workflow_id)
+
+    # Return None if the workflow does not exist.
+    if workflow is None:
+        return None
+
+    # Extract text from the quote PDF.
+    quote_pdf_text = extract_text_from_pdf(file_path)
+
+    # Store the extracted PDF text in the workflow.
+    workflow["quote_pdf_text"] = quote_pdf_text
+
+    # Rebuild the case study sources with the new PDF information.
+    workflow["case_study_sources"] = build_case_study_sources(workflow_id)
+
+    # Update the timestamp because the workflow changed.
+    workflow["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    return workflow
+
