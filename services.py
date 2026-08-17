@@ -1,3 +1,5 @@
+from document_service import save_case_study_document
+
 from pdf_service import extract_text_from_pdf
 
 from ai_service import build_case_study_prompt, generate_case_study_draft
@@ -237,10 +239,17 @@ def generate_case_study_for_workflow(workflow_id: str) -> dict | None:
     # Send the prompt to the AI and generate the draft.
     case_study_draft = generate_case_study_draft(case_study_prompt)
 
+    # Save the generated case study draft as a document.
+    case_study_document_path = save_case_study_document(
+        client_name=workflow["client_name"],
+        case_study_draft=case_study_draft,
+)
+
     # Store everything in the workflow.
     workflow["case_study_sources"] = case_study_sources
     workflow["case_study_prompt"] = case_study_prompt
     workflow["case_study_draft"] = case_study_draft
+    workflow["case_study_document_path"] = case_study_document_path
 
     # The draft is now ready for someone to review.
     workflow["stage"] = WorkflowStage.READY_FOR_REVIEW
