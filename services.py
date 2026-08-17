@@ -1,3 +1,5 @@
+from google_docs_service import create_google_doc
+
 from document_service import save_case_study_document
 
 from pdf_service import extract_text_from_pdf
@@ -245,11 +247,20 @@ def generate_case_study_for_workflow(workflow_id: str) -> dict | None:
         case_study_draft=case_study_draft,
 )
 
+    # Create a Google Doc containing the generated case study draft.
+    google_doc_url = create_google_doc(
+        title=f"{workflow['client_name']} - {workflow['project_name']} Case Study",
+        content=case_study_draft,
+)
+    
     # Store everything in the workflow.
     workflow["case_study_sources"] = case_study_sources
     workflow["case_study_prompt"] = case_study_prompt
     workflow["case_study_draft"] = case_study_draft
     workflow["case_study_document_path"] = case_study_document_path
+
+    # Store the Google Doc link in the workflow.
+    workflow["google_doc_url"] = google_doc_url
 
     # The draft is now ready for someone to review.
     workflow["stage"] = WorkflowStage.READY_FOR_REVIEW

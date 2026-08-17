@@ -6,7 +6,7 @@ Patriot Family Insurance is the client for the Nashua Office Renovation project.
 
 **Project Challenge**
 
-The client's actual workspace needs include a need for a private office desk, mobile file cabinet, conference room table, and conference chairs. The client's occupancy or headcount goal is 90-100 agents. The client is concerned about the layout of the office, including the placement of cubicles, chairs, and glass partitions. The client also wants to ensure that the office is acoustically comfortable and has adequate technology infrastructure.
+The client's actual workspace needs include a need for a private office desk, mobile file cabinet, conference room table, and conference chairs. The client's occupancy or headcount goal is 90-100 agents. The client is concerned about the layout of the office, including the use of cubicles, private offices, and conference rooms. The client is also interested in sound masking and acoustic panels to reduce noise levels.
 
 **COI Solution**
 
@@ -16,8 +16,7 @@ Commercial Office Interiors (COI) proposed a solution that includes:
 * Mobile file cabinets
 * Conference room tables
 * Conference chairs
-* Acoustic partitions
-* Technology infrastructure, including dual monitors and task chairs
+* Sound masking and acoustic panels to reduce noise levels
 
 **Products and Design Decisions**
 
@@ -27,8 +26,7 @@ COI recommended the following products and design decisions:
 * Mobile file cabinets: 4 units, $425 each
 * Conference room tables: 1 unit, $2,500
 * Conference chairs: 8 units, $475 each
-* Acoustic partitions: to be determined
-* Technology infrastructure: dual monitors and task chairs
+* Sound masking and acoustic panels: to reduce noise levels
 
 **Project Results**
 
@@ -36,10 +34,9 @@ The project is currently in the design phase. The client has not yet confirmed t
 
 **Key Takeaways**
 
-The key takeaways from this project are:
+The most important supported facts about the project are:
 
-* The client needs a private office desk, mobile file cabinet, conference room table, and conference chairs.
 * The client's occupancy or headcount goal is 90-100 agents.
-* The client is concerned about the layout of the office and the placement of cubicles, chairs, and glass partitions.
-* COI proposed a solution that includes acoustic partitions and technology infrastructure.
-* The project is currently in the design phase, and the client has not yet confirmed the final design or scope of work.
+* The client is concerned about the layout of the office, including the use of cubicles, private offices, and conference rooms.
+* COI proposed a solution that includes sound masking and acoustic panels to reduce noise levels.
+* The client is interested in a private office desk, mobile file cabinet, conference room table, and conference chairs.
