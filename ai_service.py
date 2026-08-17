@@ -31,17 +31,76 @@ QUOTE PDF:
 FATHOM TRANSCRIPTS:
 {fathom_transcripts}
 
-Use only facts that are explicitly supported by the information above.
-
 IMPORTANT RULES:
-- Do not invent, assume, or estimate any facts.
-- Do not invent project results, percentages, benefits, or client reactions.
-- Do not claim the project was completed unless the sources explicitly say it was completed.
-- Do not describe the client using claims such as "leading", "successful", or "growing" unless the sources say so.
-- Do not add products, services, design decisions, or project challenges that are not mentioned in the sources.
+- Use only facts that are explicitly supported by the provided sources.
+- Do not invent, assume, estimate, exaggerate, or fill in missing information.
+- Focus only on information relevant to the client's office project and case study.
+- Ignore greetings, casual conversation, scheduling, emails, contact information, meeting setup, financing administration, and unrelated administrative discussion.
+- Do not include personal email addresses or unnecessary personal information.
+
+- Use the quote PDF primarily for products, quantities, pricing, project scope, and quoted services.
+- Use the Fathom transcripts primarily for client needs, project challenges, design discussions, requested changes, project goals, and scope decisions.
+
+- Do not invent project results, percentages, benefits, client reactions, or completion status.
+- Do not claim the project was completed unless the sources explicitly confirm completion.
+- Do not describe the client as "leading", "successful", "growing", or similar unless the sources explicitly support that description.
+
 - Refer to Commercial Office Interiors as COI.
-- If the sources do not provide enough information for a section, clearly state that the information was not provided instead of making something up.
-- Every section must contain a response. If there is not enough supported information for a section, state that the information was not provided.
+- Every section must contain a response.
+- If there is not enough supported information for a section, clearly state that the information was not provided.
+
+- Preserve the exact meaning of quantities, limits, capacities, and headcounts.
+- When multiple numbers are mentioned for the same topic, do not combine them into a range unless the sources explicitly describe them as a range.
+- Explain what each number represents. For example, distinguish between desired headcount, proposed workstation capacity, current seating, and maximum building occupancy.
+- If later information updates or changes an earlier number or decision, describe the change instead of treating both statements as simultaneously final.
+
+- Preserve whether something is confirmed, proposed, optional, recommended, being considered, or pending.
+- Do not turn an option, recommendation, or possibility into a confirmed project decision.
+- If a product or service is pending pricing, site evaluation, design review, client approval, or another decision, describe it as pending.
+
+- Use the exact product or solution terminology supported by the sources.
+- Do not convert a general concept into a specific product. For example, "sound masking" or general acoustic discussions must not become "acoustic panels" unless acoustic panels are explicitly mentioned.
+- Do not combine unrelated facts. For example, VESA mounts apply to monitors and must not be associated with glass.
+- Only include a product, service, or design feature if the sources explicitly mention it.
+
+For each section:
+
+Client Overview:
+Briefly identify the client and project. Do not include contact information.
+
+Project Challenge:
+Describe the client's actual workspace needs, furniture needs, occupancy or headcount goals, layout concerns, acoustics, technology, growth plans, or other project-related challenges supported by the sources.
+Preserve the exact meaning of every number mentioned.
+If multiple capacities or headcounts were discussed, explain what each number represents rather than combining them into one range.
+
+COI Solution:
+Describe only solutions COI explicitly proposed, discussed, quoted, recommended, or provided.
+Clearly distinguish confirmed solutions from optional or pending ideas.
+
+Products and Design Decisions:
+Include only products, quantities, furniture, layouts, finishes, and design choices explicitly supported by the sources.
+Clearly label optional, proposed, or pending items instead of presenting them as final decisions.
+
+Project Results:
+Only describe confirmed outcomes.
+If the project has not been completed or documented results are unavailable, state that clearly.
+
+Key Takeaways:
+Summarize the most important supported facts about the project.
+Do not repeat scheduling, email, financing, or administrative details.
+Do not introduce new information that was not already supported in the other sections.
+
+COI Solution:
+Describe only solutions COI proposed, discussed, quoted, or provided.
+
+Products and Design Decisions:
+Include relevant products, quantities, furniture, layouts, finishes, and design choices supported by the sources.
+
+Project Results:
+Only describe confirmed outcomes. If the project has not been completed or results are unavailable, say so.
+
+Key Takeaways:
+Summarize the most important supported facts about the project. Do not repeat scheduling or administrative details.
 
 Organize the case study into these sections:
 
@@ -66,7 +125,8 @@ def generate_case_study_draft(case_study_prompt: str) -> str:
             "prompt": case_study_prompt,
             "stream": False,
             "options": {
-                "temperature": 0.1
+                "temperature": 0.1,
+                "num_ctx": 32768
             },
         },
         timeout=120.0,

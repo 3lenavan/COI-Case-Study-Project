@@ -1,6 +1,6 @@
 from pdf_service import extract_text_from_pdf
 
-from ai_service import build_case_study_prompt
+from ai_service import build_case_study_prompt, generate_case_study_draft
 
 from fathom_service import (
     find_meetings_by_client,
@@ -209,6 +209,41 @@ def add_quote_pdf_to_workflow(
     workflow["case_study_prompt"] = case_study_prompt
 
     # Update the timestamp because the workflow changed.
+    workflow["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    return workflow
+
+# Generate a case study draft using the collected workflow sources.
+def generate_case_study_for_workflow(workflow_id: str) -> dict | None:
+    workflow = workflows.get(workflow_id)
+
+    # Return None if the workflow does not exist.
+    if workflow is None:
+        return None
+
+    # Get the latest case study sources.
+    case_study_sources = build_case_study_sources(workflow_id)
+
+    # Make sure both the quote PDF and Fathom transcripts are available.
+    if (
+        not case_study_sources.get("quote_pdf_text")
+        or not case_study_sources.get("fathom_transcripts")
+    ):
+        return None
+
+    # Build the final prompt using the collected sources.
+    case_study_prompt = build_case_study_prompt(case_study_sources)
+
+    # Send the prompt to the AI and generate the draft.
+    case_study_draft = generate_case_study_draft(case_study_prompt)
+
+    # Store everything in the workflow.
+    workflow["case_study_sources"] = case_study_sources
+    workflow["case_study_prompt"] = case_study_prompt
+    workflow["case_study_draft"] = case_study_draft
+
+    # The draft is now ready for someone to review.
+    workflow["stage"] = WorkflowStage.READY_FOR_REVIEW
     workflow["updated_at"] = datetime.now(timezone.utc).isoformat()
 
     return workflow

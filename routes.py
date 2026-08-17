@@ -9,6 +9,7 @@ from services import (
     advance_to_fathom_search,
     add_quote_pdf_to_workflow,
     create_workflow,
+    generate_case_study_for_workflow,
     get_workflow,
     update_workflow_status,
 )
@@ -81,7 +82,6 @@ def change_workflow_status(
 
 
 # PATCH endpoint used to start the Fathom meeting search.
-
 @router.patch("/v1/case-studies/{workflow_id}/start-fathom-search")
 def start_fathom_search(workflow_id: str):
 
@@ -143,4 +143,29 @@ async def upload_quote_pdf(
         os.remove(temp_file_path)
 
     # Return the updated workflow.
+    return updated_workflow
+
+# Generate the case study draft using the collected workflow sources.
+@router.patch("/v1/case-studies/{workflow_id}/generate-draft")
+def generate_case_study_draft(workflow_id: str):
+
+    # Make sure the workflow exists.
+    workflow = get_workflow(workflow_id)
+
+    if workflow is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Workflow not found",
+        )
+
+    # Generate the case study draft.
+    updated_workflow = generate_case_study_for_workflow(workflow_id)
+
+    # Both the quote PDF and Fathom transcripts are required.
+    if updated_workflow is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Quote PDF and Fathom transcripts are required before generating the draft.",
+        )
+
     return updated_workflow
