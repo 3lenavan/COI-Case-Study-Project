@@ -256,3 +256,37 @@ def generate_case_study_for_workflow(workflow_id: str) -> dict | None:
     workflow["updated_at"] = datetime.now(timezone.utc).isoformat()
 
     return workflow
+
+# Run the full case study workflow automatically.
+def process_case_study_workflow(
+    workflow_id: str,
+    quote_pdf_path: str,
+) -> dict | None:
+
+    # Make sure the workflow exists.
+    workflow = get_workflow(workflow_id)
+
+    if workflow is None:
+        return None
+
+    # Extract and store the quote PDF information.
+    add_quote_pdf_to_workflow(
+        workflow_id,
+        quote_pdf_path,
+    )
+
+    # Mark the workflow as validated.
+    update_workflow_status(
+        workflow_id,
+        WorkflowStatus.VALIDATED,
+    )
+
+    # Search Fathom and collect the client transcripts.
+    advance_to_fathom_search(workflow_id)
+
+    # Generate the case study and Word document.
+    completed_workflow = generate_case_study_for_workflow(
+        workflow_id
+    )
+
+    return completed_workflow

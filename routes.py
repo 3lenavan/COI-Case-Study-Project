@@ -11,6 +11,7 @@ from services import (
     create_workflow,
     generate_case_study_for_workflow,
     get_workflow,
+    process_case_study_workflow,
     update_workflow_status,
 )
 
@@ -169,3 +170,48 @@ def generate_case_study_draft(workflow_id: str):
         )
 
     return updated_workflow
+
+# Run the full case study workflow using the uploaded quote PDF.
+@router.post("/v1/case-studies/{workflow_id}/process")
+def process_case_study(
+    workflow_id: str,
+    file: UploadFile = File(...),
+):
+
+    # Make sure the workflow exists.
+    workflow = get_workflow(workflow_id)
+
+    if workflow is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Workflow not found",
+        )
+
+    # Temporarily save the uploaded PDF.
+    with tempfile.NamedTemporaryFile(
+        delete=False,
+        suffix=".pdf",
+    ) as temp_file:
+
+        temp_file.write(file.file.read())
+        temp_file_path = temp_file.name
+
+    try:
+        # Run the complete workflow automatically.
+        completed_workflow = process_case_study_workflow(
+            workflow_id,
+            temp_file_path,
+        )
+
+        if completed_workflow is None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Case study workflow could not be completed.",
+            )
+
+        return completed_workflow
+
+    finally:
+        # Delete the temporary PDF after processing.
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
