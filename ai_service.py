@@ -1,6 +1,20 @@
-import httpx
+import os
 
-# Build the prompt that will eventually be sent to the AI.
+from dotenv import load_dotenv
+from openai import OpenAI
+
+
+# Load environment variables from the .env file.
+load_dotenv()
+
+
+# Create the OpenAI client using the API key from .env.
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY")
+)
+
+
+# Build the prompt that will be sent to the AI.
 def build_case_study_prompt(case_study_sources: dict) -> str:
 
     # Get the project information from the collected case study sources.
@@ -90,18 +104,6 @@ Summarize the most important supported facts about the project.
 Do not repeat scheduling, email, financing, or administrative details.
 Do not introduce new information that was not already supported in the other sections.
 
-COI Solution:
-Describe only solutions COI proposed, discussed, quoted, or provided.
-
-Products and Design Decisions:
-Include relevant products, quantities, furniture, layouts, finishes, and design choices supported by the sources.
-
-Project Results:
-Only describe confirmed outcomes. If the project has not been completed or results are unavailable, say so.
-
-Key Takeaways:
-Summarize the most important supported facts about the project. Do not repeat scheduling or administrative details.
-
 Organize the case study into these sections:
 
 1. Client Overview
@@ -115,31 +117,18 @@ Organize the case study into these sections:
     return prompt
 
 
-# Send the completed case study prompt to the local Ollama AI model.
+# Send the completed case study prompt to OpenAI.
 def generate_case_study_draft(case_study_prompt: str) -> str:
 
-    response = httpx.post(
-        "http://localhost:11434/api/generate",
-        json={
-            "model": "llama3.2:3b",
-            "prompt": case_study_prompt,
-            "stream": False,
-            "options": {
-                "temperature": 0.1,
-                "num_ctx": 32768
-            },
-        },
-        timeout=120.0,
-    )
+    response = client.responses.create(
+        model="gpt-5.6",
+        input=case_study_prompt,
+)
 
-    response.raise_for_status()
-
-    response_data = response.json()
-
-    return response_data["response"]
+    return response.output_text
 
 
-# Test the full prompt and local AI generation when this file is run directly.
+# Test the full prompt and OpenAI generation when this file is run directly.
 if __name__ == "__main__":
     test_sources = {
         "client_name": "Patriot Family Insurance",
@@ -161,8 +150,8 @@ and workspace solutions for their Nashua office.
     # Build the same prompt the real workflow will use.
     test_prompt = build_case_study_prompt(test_sources)
 
-    # Send the prompt to the local Ollama model.
+    # Send the prompt to OpenAI.
     draft = generate_case_study_draft(test_prompt)
 
-    print("\n========== AI CASE STUDY TEST ==========")
+    print("\n========== OPENAI CASE STUDY TEST ==========")
     print(draft)

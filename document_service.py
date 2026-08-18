@@ -1,11 +1,12 @@
 from pathlib import Path
+from docx import Document
 
 
-# Folder where generated case study drafts will be saved.
+# Folder where generated case study documents will be saved.
 OUTPUT_FOLDER = Path("generated_case_studies")
 
 
-# Save a generated case study draft as a text file.
+# Save a generated case study draft as a Microsoft Word document.
 def save_case_study_document(
     client_name: str,
     case_study_draft: str,
@@ -17,24 +18,34 @@ def save_case_study_document(
     # Make the client name safer to use as a file name.
     safe_client_name = client_name.replace(" ", "_")
 
-    # Create the file path.
-    file_path = OUTPUT_FOLDER / f"{safe_client_name}_case_study.txt"
+    # Create the Word document file path.
+    file_path = OUTPUT_FOLDER / f"{safe_client_name}_case_study.docx"
 
-    # Save the AI-generated case study draft.
-    file_path.write_text(
-        case_study_draft,
-        encoding="utf-8",
+    # Create a new Microsoft Word document.
+    document = Document()
+
+    # Add a title to the document.
+    document.add_heading(
+        f"{client_name} Case Study",
+        level=0,
     )
+
+    # Add the AI-generated case study draft.
+    document.add_paragraph(case_study_draft)
+
+    # Save the Word document.
+    document.save(file_path)
 
     # Return the location of the saved document.
     return str(file_path)
 
-# Test saving a case study document when this file is run directly.
+
+# Test Word document creation when this file is run directly.
 if __name__ == "__main__":
     test_draft = """
 Client Overview
 
-Patriot Family Insurance is the client for the office renovation project.
+Patriot Family Insurance is the client for the Nashua Office Renovation project.
 
 Project Challenge
 
@@ -42,7 +53,7 @@ The client needs new furniture and workspace solutions.
 
 COI Solution
 
-COI proposed furniture and workspace solutions for the office.
+COI proposed furniture and workspace solutions.
 
 Project Results
 
@@ -54,5 +65,5 @@ Project results are not yet available.
         case_study_draft=test_draft,
     )
 
-    print("\n========== DOCUMENT TEST ==========")
+    print("\n========== WORD DOCUMENT TEST ==========")
     print(f"Case study saved to: {file_path}")
