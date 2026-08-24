@@ -17,7 +17,7 @@ def extract_text_from_pdf(file_path: str) -> str:
 
 # Test PDF text extraction when this file is run directly.
 if __name__ == "__main__":
-    pdf_text = extract_text_from_pdf("test_quote.pdf")
+    pdf_text = extract_text_from_pdf("Test Doc.pdf")
 
     print("\n========== PDF TEXT TEST ==========")
     print(pdf_text[:3000])

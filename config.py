@@ -1,4 +1,4 @@
 APPROVED_SENDERS = {
     "joe@commercialofficeinteriors.com",
-    "elena@commercialofficeinteriors.com",
+    "3lenavan@gmail.com",
 }

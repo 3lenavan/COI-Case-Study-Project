@@ -77,6 +77,11 @@ IMPORTANT RULES:
 - Do not combine unrelated facts. For example, VESA mounts apply to monitors and must not be associated with glass.
 - Only include a product, service, or design feature if the sources explicitly mention it.
 
+- Do not use Markdown formatting.
+- Do not use #, ##, **, *, or backticks.
+- Write section headings as plain text only.
+- Keep the output clean for direct insertion into Google Docs.
+
 For each section:
 
 Client Overview:
@@ -104,14 +109,19 @@ Summarize the most important supported facts about the project.
 Do not repeat scheduling, email, financing, or administrative details.
 Do not introduce new information that was not already supported in the other sections.
 
-Organize the case study into these sections:
+Organize the case study using these plain-text section headings:
 
-1. Client Overview
-2. Project Challenge
-3. COI Solution
-4. Products and Design Decisions
-5. Project Results
-6. Key Takeaways
+Client Overview
+
+Project Challenge
+
+COI Solution
+
+Products and Design Decisions
+
+Project Results
+
+Key Takeaways
 """
 
     return prompt

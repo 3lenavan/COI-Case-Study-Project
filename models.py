@@ -28,8 +28,8 @@ class WorkflowStatusUpdate(BaseModel):
 
 # Defines and validates the information received when a new case study workflow is created.
 class CaseStudyIntake(BaseModel):
-    client_name: str
-    project_name: str
+    client_name: str | None = None
+    project_name: str | None = None
     emanage_job_number: str | None = None
     message_id: str
     sender_email: EmailStr
@@ -37,8 +37,6 @@ class CaseStudyIntake(BaseModel):
 
     # Run the validator on each of these required fields.
     @field_validator(
-        "client_name",
-        "project_name",
         "message_id",
         "sender_email",
         "email_subject",

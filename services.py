@@ -119,11 +119,24 @@ def advance_to_fathom_search(workflow_id: str) -> dict | None:
     # Update the stage to show that Fathom meetings are being searched.
     workflow["stage"] = WorkflowStage.SEARCHING_FATHOM
 
-    # Search for meetings that contain the client name in their title.
     client_name = workflow["client_name"]
 
-    # Use the Fathom service to find meetings that match the client name.
-    matching_meetings = find_meetings_by_client(client_name)
+    # Use the first word of the client name for a broader Fathom search.
+    fathom_search_name = client_name.split()[0]
+
+    # Test
+    matching_meetings = find_meetings_by_client(fathom_search_name)
+
+    print("\n========== LIVE FATHOM SEARCH ==========")
+    print("Client being searched:", fathom_search_name)
+    print("Number of meetings found:", len(matching_meetings))
+
+    for meeting in matching_meetings:
+            print(
+                meeting["title"],
+        "-",
+        meeting["recording_id"],
+    )
 
     # Retrieve transcripts for the matching client meetings.
     meetings_with_transcripts = get_transcripts_for_meetings(
@@ -183,6 +196,30 @@ def build_case_study_sources(workflow_id: str) -> dict | None:
 
     return case_study_sources
 
+def extract_quote_details(quote_pdf_text: str) -> dict:
+    details = {
+        "client_name": None,
+        "project_name": None,
+        "emanage_job_number": None,
+    }
+
+    for line in quote_pdf_text.splitlines():
+        cleaned_line = line.strip()
+
+        if cleaned_line.startswith("Client:"):
+            details["client_name"] = cleaned_line.split("Client:", 1)[1].strip()
+
+        elif cleaned_line.startswith("Project:"):
+            details["project_name"] = cleaned_line.split("Project:", 1)[1].strip()
+
+        elif cleaned_line.startswith("eManage Job Number:"):
+            details["emanage_job_number"] = cleaned_line.split(
+                "eManage Job Number:", 1
+            )[1].strip()
+
+    return details
+
+
 # Extract quote PDF text and store it in the workflow.
 def add_quote_pdf_to_workflow(
     workflow_id: str,
@@ -199,6 +236,20 @@ def add_quote_pdf_to_workflow(
 
     # Store the extracted PDF text in the workflow.
     workflow["quote_pdf_text"] = quote_pdf_text
+
+    # Extract important project information from the quote.
+    quote_details = extract_quote_details(quote_pdf_text)
+
+    # Update the workflow using information found in the PDF.
+    if quote_details["client_name"]:
+        workflow["client_name"] = quote_details["client_name"]
+
+    if quote_details["project_name"]:
+        workflow["project_name"] = quote_details["project_name"]
+
+    if quote_details["emanage_job_number"]:
+        workflow["emanage_job_number"] = quote_details["emanage_job_number"]
+
 
     # Rebuild the case study sources with the new PDF information.
     workflow["case_study_sources"] = build_case_study_sources(workflow_id)

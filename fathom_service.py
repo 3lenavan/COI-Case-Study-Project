@@ -36,10 +36,8 @@ def get_meetings(cursor: str | None = None):
 
     return response.json()
 
-
-# Get multiple pages of meetings
-# We are limiting it to 3 pages while testing
-def get_all_meetings(max_pages: int = 3):
+# Get multiple pages of recent meetings
+def get_all_meetings(max_pages: int = 10):
     all_meetings = []
     cursor = None
     page_count = 0
@@ -63,6 +61,12 @@ def get_all_meetings(max_pages: int = 3):
 
         if cursor is None:
             break
+
+    # Sort meetings from newest to oldest
+    all_meetings.sort(
+        key=lambda meeting: meeting["recording_start_time"],
+        reverse=True,
+    )
 
     return all_meetings
 
@@ -151,7 +155,14 @@ def format_transcripts_for_ai(meetings: list) -> str:
 
 # Testing block to demonstrate the functionality of the Fathom service functions
 if __name__ == "__main__":
-    matching_meetings = find_meetings_by_client("Patriot")
+    matching_meetings = find_meetings_by_client("Northampton")
+
+    print("\n========== MATCHING NORTHAMPTON MEETINGS ==========")
+
+    print("Number of meetings:", len(matching_meetings))
+
+    for meeting in matching_meetings:
+        print(meeting["title"], "-", meeting["recording_id"])
 
     meetings_with_transcripts = get_transcripts_for_meetings(
         matching_meetings
