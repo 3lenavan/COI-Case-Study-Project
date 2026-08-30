@@ -34,6 +34,7 @@ class CaseStudyIntake(BaseModel):
     message_id: str
     sender_email: EmailStr
     email_subject: str
+    email_body: str | None = None
 
     # Run the validator on each of these required fields.
     @field_validator(

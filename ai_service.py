@@ -1,4 +1,5 @@
 import os
+import json
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -79,7 +80,6 @@ IMPORTANT RULES:
 
 - Do not use Markdown formatting.
 - Do not use #, ##, **, *, or backticks.
-- Write section headings as plain text only.
 - Keep the output clean for direct insertion into Google Docs.
 
 For each section:
@@ -109,33 +109,36 @@ Summarize the most important supported facts about the project.
 Do not repeat scheduling, email, financing, or administrative details.
 Do not introduce new information that was not already supported in the other sections.
 
-Organize the case study using these plain-text section headings:
+Return the final response as valid JSON only.
 
-Client Overview
+Use exactly these keys:
 
-Project Challenge
+{{
+  "client_overview": "",
+  "project_challenge": "",
+  "coi_solution": "",
+  "products_design": "",
+  "project_results": "",
+  "key_takeaways": ""
+}}
 
-COI Solution
-
-Products and Design Decisions
-
-Project Results
-
-Key Takeaways
+Do not include Markdown.
+Do not include code fences.
+Do not include any text before or after the JSON.
 """
 
     return prompt
 
 
 # Send the completed case study prompt to OpenAI.
-def generate_case_study_draft(case_study_prompt: str) -> str:
+def generate_case_study_draft(case_study_prompt: str) -> dict:
 
     response = client.responses.create(
         model="gpt-5.6",
         input=case_study_prompt,
-)
+    )
 
-    return response.output_text
+    return json.loads(response.output_text)
 
 
 # Test the full prompt and OpenAI generation when this file is run directly.

@@ -33,6 +33,27 @@ def is_approved_sender(sender_email: str) -> bool:
     return sender_email.lower() in APPROVED_SENDERS
 
 
+# Build a prompt for the AI to generate a case study draft.
+def extract_email_details(email_body: str | None) -> dict:
+    details = {
+        "client_name": None,
+        "project_name": None,
+    }
+
+    if not email_body:
+        return details
+
+    for line in email_body.splitlines():
+        cleaned_line = line.strip()
+
+        if cleaned_line.lower().startswith("client:"):
+            details["client_name"] = cleaned_line.split(":", 1)[1].strip()
+
+        elif cleaned_line.lower().startswith("project:"):
+            details["project_name"] = cleaned_line.split(":", 1)[1].strip()
+
+    return details
+
 # Create and store a new case study workflow.
 def create_workflow(intake: CaseStudyIntake) -> dict | None:
 
@@ -46,6 +67,12 @@ def create_workflow(intake: CaseStudyIntake) -> dict | None:
     # Return the existing workflow instead of creating a duplicate.
     if existing_workflow is not None:
         return existing_workflow
+
+    # Extract client and project details from the email body.
+    email_details = extract_email_details(intake.email_body)
+
+    client_name = intake.client_name or email_details["client_name"]
+    project_name = intake.project_name or email_details["project_name"]
 
     # Generate a unique ID for this workflow.
     workflow_id = str(uuid4())
@@ -61,8 +88,8 @@ def create_workflow(intake: CaseStudyIntake) -> dict | None:
         "received_at": current_time,
         "updated_at": current_time,
         "source": "FastAPI Docs",
-        "client_name": intake.client_name,
-        "project_name": intake.project_name,
+        "client_name": client_name,
+        "project_name": project_name,
         "emanage_job_number": intake.emanage_job_number,
         "message_id": intake.message_id,
         "sender_email": intake.sender_email,
@@ -73,7 +100,6 @@ def create_workflow(intake: CaseStudyIntake) -> dict | None:
     workflows[workflow_id] = workflow
 
     return workflow
-
 
 # Find and return a workflow using its workflow ID.
 def get_workflow(workflow_id: str) -> dict | None:
@@ -116,10 +142,11 @@ def advance_to_fathom_search(workflow_id: str) -> dict | None:
     if workflow is None:
         return None
 
-    # Update the stage to show that Fathom meetings are being searched.
-    workflow["stage"] = WorkflowStage.SEARCHING_FATHOM
+    # Make sure the client name is available before searching Fathom.
+    client_name = workflow.get("client_name")
 
-    client_name = workflow["client_name"]
+    if not client_name:
+        raise ValueError("Client name is required before starting Fathom search.")
 
     # Use the first word of the client name for a broader Fathom search.
     fathom_search_name = client_name.split()[0]
@@ -287,19 +314,56 @@ def generate_case_study_for_workflow(workflow_id: str) -> dict | None:
     # Build the final prompt using the collected sources.
     case_study_prompt = build_case_study_prompt(case_study_sources)
 
-    # Send the prompt to the AI and generate the draft.
-    case_study_draft = generate_case_study_draft(case_study_prompt)
+    # Send the prompt to the AI and generate the six case study sections.
+    case_study_sections = generate_case_study_draft(case_study_prompt)
+
+    # Build a plain-text version for the local document file.
+    case_study_draft = f"""Client Overview
+
+{case_study_sections["client_overview"]}
+
+Project Challenge
+
+{case_study_sections["project_challenge"]}
+
+COI Solution
+
+{case_study_sections["coi_solution"]}
+
+Products and Design Decisions
+
+{case_study_sections["products_design"]}
+
+Project Results
+
+{case_study_sections["project_results"]}
+
+Key Takeaways
+
+{case_study_sections["key_takeaways"]}
+"""
 
     # Save the generated case study draft as a document.
     case_study_document_path = save_case_study_document(
         client_name=workflow["client_name"],
         case_study_draft=case_study_draft,
-)
-    
+    )
+
     # Store everything in the workflow.
     workflow["case_study_sources"] = case_study_sources
     workflow["case_study_prompt"] = case_study_prompt
+
+    # Store the full plain-text draft.
     workflow["case_study_draft"] = case_study_draft
+
+    # Store each section separately so Zapier can use them.
+    workflow["client_overview"] = case_study_sections["client_overview"]
+    workflow["project_challenge"] = case_study_sections["project_challenge"]
+    workflow["coi_solution"] = case_study_sections["coi_solution"]
+    workflow["products_design"] = case_study_sections["products_design"]
+    workflow["project_results"] = case_study_sections["project_results"]
+    workflow["key_takeaways"] = case_study_sections["key_takeaways"]
+
     workflow["case_study_document_path"] = case_study_document_path
 
     # The draft is now ready for someone to review.

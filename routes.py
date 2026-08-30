@@ -179,7 +179,18 @@ def generate_case_study_draft(workflow_id: str):
     "client_name": updated_workflow["client_name"],
     "project_name": updated_workflow["project_name"],
     "emanage_job_number": updated_workflow["emanage_job_number"],
+
+    # Full case study draft.
     "case_study_draft": updated_workflow["case_study_draft"],
+
+    # Individual sections for the Google Docs template.
+    "client_overview": updated_workflow["client_overview"],
+    "project_challenge": updated_workflow["project_challenge"],
+    "coi_solution": updated_workflow["coi_solution"],
+    "products_design": updated_workflow["products_design"],
+    "project_results": updated_workflow["project_results"],
+    "key_takeaways": updated_workflow["key_takeaways"],
+
     "case_study_document_path": updated_workflow["case_study_document_path"],
 }
 
